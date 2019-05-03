@@ -148,7 +148,7 @@ public class PositionPublisher {
             the configuration file USER_QOS_PROFILES.xml */
 
             topic = participant.create_topic(
-                "Example Position",
+                "P2464_ischultz",
                 typeName, DomainParticipant.TOPIC_QOS_DEFAULT,
                 null /* listener */, StatusKind.STATUS_MASK_NONE);
             if (topic == null) {
