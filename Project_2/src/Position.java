@@ -21,7 +21,7 @@ public class Position   implements Copyable, Serializable{
     public String vehicle=  "" ; /* maximum length = (255) */
     public int stopNumber= 0;
     public int numStops= 0;
-    public int timeBetweenStops= 0;
+    public double timeBetweenStops= 0;
     public String trafficConditions=  "" ; /* maximum length = (255) */
     public int fillInRatio= 0;
 
@@ -36,7 +36,7 @@ public class Position   implements Copyable, Serializable{
     	timeBetweenStops = routeInfo.TimeBetweenStops();    	
     }
     
-    public Position(Position other) {
+    public Position (Position other) {
 
         this();
         copy_from(other);

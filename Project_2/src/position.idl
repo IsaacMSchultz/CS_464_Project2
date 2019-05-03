@@ -4,7 +4,7 @@ struct Position {
     string vehicle;
     long stopNumber;
     long numStops;
-    long timeBetweenStops;
+    double timeBetweenStops;
     string trafficConditions;
     long fillInRatio;
 };

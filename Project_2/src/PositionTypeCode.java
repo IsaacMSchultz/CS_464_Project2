@@ -23,7 +23,7 @@ public class  PositionTypeCode {
         sm[__i]=new  StructMember("vehicle", false, (short)-1,  false,(TypeCode) new TypeCode(TCKind.TK_STRING,255),2 , false);__i++;
         sm[__i]=new  StructMember("stopNumber", false, (short)-1,  false,(TypeCode) TypeCode.TC_LONG,3 , false);__i++;
         sm[__i]=new  StructMember("numStops", false, (short)-1,  false,(TypeCode) TypeCode.TC_LONG,4 , false);__i++;
-        sm[__i]=new  StructMember("timeBetweenStops", false, (short)-1,  false,(TypeCode) TypeCode.TC_LONG,5 , false);__i++;
+        sm[__i]=new  StructMember("timeBetweenStops", false, (short)-1,  false,(TypeCode) TypeCode.TC_DOUBLE,5 , false);__i++;
         sm[__i]=new  StructMember("trafficConditions", false, (short)-1,  false,(TypeCode) new TypeCode(TCKind.TK_STRING,255),6 , false);__i++;
         sm[__i]=new  StructMember("fillInRatio", false, (short)-1,  false,(TypeCode) TypeCode.TC_LONG,7 , false);__i++;
 

@@ -153,7 +153,7 @@ public class PositionTypeSupport extends TypeSupportImpl {
         currentAlignment +=CdrPrimitiveType.getStringMaxSizeSerialized(currentAlignment, (255)+1);
         currentAlignment += CdrPrimitiveType.INT.getMaxSizeSerialized(currentAlignment) ;
         currentAlignment += CdrPrimitiveType.INT.getMaxSizeSerialized(currentAlignment) ;
-        currentAlignment += CdrPrimitiveType.INT.getMaxSizeSerialized(currentAlignment) ;
+        currentAlignment += CdrPrimitiveType.DOUBLE.getMaxSizeSerialized(currentAlignment) ;
         currentAlignment +=CdrPrimitiveType.getStringMaxSizeSerialized(currentAlignment, (255)+1);
         currentAlignment += CdrPrimitiveType.INT.getMaxSizeSerialized(currentAlignment) ;
         if (include_encapsulation) {
@@ -184,7 +184,7 @@ public class PositionTypeSupport extends TypeSupportImpl {
         currentAlignment += CdrPrimitiveType.getStringMaxSizeSerialized(currentAlignment, 1);
         currentAlignment +=CdrPrimitiveType.INT.getMaxSizeSerialized(currentAlignment) ;
         currentAlignment +=CdrPrimitiveType.INT.getMaxSizeSerialized(currentAlignment) ;
-        currentAlignment +=CdrPrimitiveType.INT.getMaxSizeSerialized(currentAlignment) ;
+        currentAlignment +=CdrPrimitiveType.DOUBLE.getMaxSizeSerialized(currentAlignment) ;
         currentAlignment += CdrPrimitiveType.getStringMaxSizeSerialized(currentAlignment, 1);
         currentAlignment +=CdrPrimitiveType.INT.getMaxSizeSerialized(currentAlignment) ;
 
@@ -229,7 +229,7 @@ public class PositionTypeSupport extends TypeSupportImpl {
 
         currentAlignment  +=  CdrPrimitiveType.INT.getMaxSizeSerialized(epd.getAlignment(currentAlignment));
 
-        currentAlignment  +=  CdrPrimitiveType.INT.getMaxSizeSerialized(epd.getAlignment(currentAlignment));
+        currentAlignment  +=  CdrPrimitiveType.DOUBLE.getMaxSizeSerialized(epd.getAlignment(currentAlignment));
 
         currentAlignment  +=  CdrPrimitiveType.getStringSerializedSize(epd.getAlignment(currentAlignment), typedSrc.trafficConditions );
 
@@ -296,7 +296,7 @@ public class PositionTypeSupport extends TypeSupportImpl {
 
             dst.writeInt(typedSrc.numStops);
 
-            dst.writeInt(typedSrc.timeBetweenStops);
+            dst.writeDouble(typedSrc.timeBetweenStops);
 
             dst.writeString(typedSrc.trafficConditions,255);
 
@@ -370,7 +370,7 @@ public class PositionTypeSupport extends TypeSupportImpl {
                 typedDst.vehicle = src.readString(255);
                 typedDst.stopNumber = src.readInt();
                 typedDst.numStops = src.readInt();
-                typedDst.timeBetweenStops = src.readInt();
+                typedDst.timeBetweenStops = src.readDouble();
                 typedDst.trafficConditions = src.readString(255);
                 typedDst.fillInRatio = src.readInt();
             } catch (IllegalCdrStateException stateEx) {
@@ -467,7 +467,7 @@ public class PositionTypeSupport extends TypeSupportImpl {
 
             src.skipInt();
 
-            src.skipInt();
+            src.skipDouble();
 
             src.skipString();
 
