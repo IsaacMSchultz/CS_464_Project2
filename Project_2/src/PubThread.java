@@ -125,8 +125,8 @@ public class PubThread extends Thread {
 					String timeString = timeStamper.format(new Date()); //makes a timestamp for the current time
 					positionInstance.trafficConditions = "Normal"; //reset traffic conditions.
 					
-					// roll the dice on an accident as we begin to leave the bus stop. 5 has a 1 in 10 (10%) chance of being the output!
-					if (rand.nextInt(10) == 5)
+					// roll the dice on an accident as we begin to leave the bus stop. 1 has a 1 in 10 (10%) chance of being the output!
+					if (rand.nextInt(2) == 1) //increased the probability of an accident to demo it for the passengers
 					{
 						accidentInstance.stopNumber = stop;
 						accidentInstance.timestamp = timeString;
@@ -145,12 +145,12 @@ public class PubThread extends Thread {
 					
 					// Roll the dice for the traffic conditions!
 					trafficNum = rand.nextInt(100);
-					if (trafficNum > 90) // only happens 10% of the time. heavy traffic.
+					if (trafficNum >= 90) // only happens 10% of the time. heavy traffic.
 					{
 						actualWaitTime = (long) Math.floor(betweenStops * 1.5); //increase time by 50% rounding down
 						positionInstance.trafficConditions = "Heavy";
 					}
-					else if (trafficNum > 75) // only happens 25% of the time. Light traffic.
+					else if (trafficNum >= 75) // only happens 25% of the time. Light traffic.
 					{
 						actualWaitTime = (long) Math.floor(betweenStops * 1.25); //increase time by 25% rounding down
 						positionInstance.trafficConditions = "Light";

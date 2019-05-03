@@ -13,18 +13,12 @@ import com.rti.dds.infrastructure.StatusKind;
 import com.rti.dds.publication.Publisher;
 import com.rti.dds.topic.Topic;
 
-public class SubLauncher {
+public class PassengerLauncher {
 	public static void main(String[] args) {
+			if (args.length != 3)
+				System.err.println("Invalid arguments!");
 			
-			// Variables to start threads.
-			int numThreads;
-			int curThread = 0;
-			SubThread[] subThreads;
-				
-			//Operator operator = new Operator();
-			//operator.start();
-			
-			Passenger passenger = new Passenger("Express1", 2, 4);
+			Passenger passenger = new Passenger(args[0], Integer.parseInt(args[0]), Integer.parseInt(args[0]));
 			passenger.start();
 			
 			//Don't really need to wait on join since starting threads is the last thing this class does.

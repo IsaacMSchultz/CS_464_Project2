@@ -38,7 +38,6 @@ public class Passenger extends Thread {
         Topic positionTopic = null;
         Topic accidentTopic = null;
         DataReaderListener accidentListener = null;
-        DataReaderListener positionListener = null;
         AccidentDataReader accidentReader = null;
         PositionDataReader positionReader = null;
 
@@ -67,19 +66,28 @@ public class Passenger extends Thread {
             if (subscriber == null) {
                 System.err.println("create_subscriber error\n");
                 return;
-            }     
+            }
+            
+            // Generate the lists that we will use to for topic filtering. We start by listening only for routes
+            String list[] = {route}; // RTI wants the parameters in this format.		
+			StringSeq parameters = new StringSeq(java.util.Arrays.asList(list)); // RTI wants the parameters in this format.
 			
-			String list[] = {route}; // RTI wants the parameters in this format.
-			
+			// Register typenames first.
 			String positionTypeName = PositionTypeSupport.get_type_name();
 			PositionTypeSupport.register_type(participant, positionTypeName);
+			
+			String accidentTypeName = AccidentTypeSupport.get_type_name();
+	        AccidentTypeSupport.register_type(participant, accidentTypeName);
 
 			positionTopic = participant.create_topic("P2464_ischultz:POS", positionTypeName, DomainParticipant.TOPIC_QOS_DEFAULT, null /* listener */, StatusKind.STATUS_MASK_NONE);
 			if (positionTopic == null) {
 				System.err.println("create_topic error\n");
 			}
-					
-			StringSeq parameters = new StringSeq(java.util.Arrays.asList(list)); // RTI wants the parameters in this format.
+			
+			accidentTopic = participant.create_topic("P2464_ischultz:ACC", accidentTypeName, DomainParticipant.TOPIC_QOS_DEFAULT, null /* listener */, StatusKind.STATUS_MASK_NONE);
+			if (accidentTopic == null) {
+				System.err.println("create_topic error\n");
+			}
 			
 			ContentFilteredTopic positionTopicFiltered =  participant.create_contentfilteredtopic_with_filter(
 	                "P2464_ischultz:POS", positionTopic, "route MATCH %0", 
@@ -87,21 +95,31 @@ public class Passenger extends Thread {
 	        if (positionTopicFiltered == null) {
 	            System.err.println("create_contentfilteredtopic error\n");
 	        }
+	        
+	        ContentFilteredTopic accidentTopicFiltered =  participant.create_contentfilteredtopic_with_filter(
+	                "P2464_ischultz:ACC", accidentTopic, "route MATCH %0", 
+	                parameters, DomainParticipant.STRINGMATCHFILTER_NAME);
+	        if (accidentTopicFiltered == null) {
+	            System.err.println("create_contentfilteredtopic error\n");            
+	        }
 
-	        //DataReaderListener positionListener = new PositionListenerForPassenger(); //make new listeners with the specific route we are on as a passenger
-
+	        // Generate readers that allow us to grab data from the DDS when information becomes available
+	        
 	        positionReader = (PositionDataReader) subscriber.create_datareader(positionTopicFiltered, Subscriber.DATAREADER_QOS_DEFAULT, null, StatusKind.STATUS_MASK_ALL);
 	        if (positionReader == null) {
 	        	System.err.println("create_datareader error\n");
 	        }
-			
-			// Use a function that I defined to create the readers.
-			//positionReader = CreatePositionReader(participant, subscriber, "route MATCH %0", list);
-			accidentReader = CreateAccidentReader(participant, subscriber, "route MATCH %0", list);
+	        
+	        // The accident listener can be entirely de-coupled from the position listener in the loop below. However, the position listener will update the content based filter for accidents when the passenger gets on the bus
+	        accidentListener = new AccidentListenerForPassenger();
+	        
+	        accidentReader = (AccidentDataReader) subscriber.create_datareader(accidentTopicFiltered, Subscriber.DATAREADER_QOS_DEFAULT, accidentListener, StatusKind.STATUS_MASK_ALL);
+	        if (accidentReader == null) {
+	        	System.err.println("create_datareader error\n");
+	        }
 			
 			/* Create query condition */
-			
-			//Logger.get_instance().set_verbosity(LogVerbosity.NDDS_CONFIG_LOG_VERBOSITY_STATUS_LOCAL);
+	        // We will use this query condition to wake up the thread whenever content is published to the
 			
             StringSeq query_parameters = new StringSeq(1);
             query_parameters.add(new String("'" + route + "'"));
@@ -114,17 +132,6 @@ public class Passenger extends Thread {
                     query_expression,
                     query_parameters);
             if (Pquery_condition == null) {
-                System.err.println("create_querycondition error\n");
-                return;
-            }
-            
-            QueryCondition Aquery_condition = accidentReader.create_querycondition(
-                    SampleStateKind.NOT_READ_SAMPLE_STATE,
-                    ViewStateKind.ANY_VIEW_STATE,
-                    InstanceStateKind.ANY_INSTANCE_STATE,
-                    query_expression,
-                    query_parameters);
-            if (Aquery_condition == null) {
                 System.err.println("create_querycondition error\n");
                 return;
             }
@@ -143,8 +150,6 @@ public class Passenger extends Thread {
             // --- Wait for data --- //
             while (!atDestination) { //loop until the passenger arrives at their destination
             	ConditionSeq active_conditions_seq = new ConditionSeq();
-            	
-            	System.out.println("YEET");
             	
             	try {
                     waitset.wait(active_conditions_seq, wait_timeout); //make this thread sleep until a location that we care about is published
@@ -174,7 +179,7 @@ public class Passenger extends Thread {
                             SampleInfo info = (SampleInfo)P_infoSeq.get(i);
                             Position pos = (Position)P_dataSeq.get(i); // create a position object from the information that was published
                             
-                            System.out.println("current recieved data position" + i);
+                            //System.out.println("current recieved data position" + i);
 
                             if (info.valid_data) {                    	                        	
                             	if (pos.stopNumber == start) //This is the stop that we get on at!
@@ -182,6 +187,12 @@ public class Passenger extends Thread {
                             		System.out.println("Passenger getting on bus " + pos.vehicle + " at " + timeStamper.format(new Date()) + "\tthere is " + pos.trafficConditions + " traffic. " + (end - pos.stopNumber) + " stops left");
 
                             		waitset.detach_condition(Pquery_condition); //remove the original query condition
+                            		
+                            		// change the topic filter to only care about that bus, and not the whole route
+                            		list[0] = "'" + pos.vehicle + "'"; // RTI wants the parameters in this format.		
+                        			parameters = new StringSeq(java.util.Arrays.asList(list)); // RTI wants the parameters in this format.
+                        	        positionTopicFiltered.set_expression( "vehicle MATCH %0", parameters); //change the topic filter for both accident and position to match only the vehicle that the passenger just got on.
+                        	        accidentTopicFiltered.set_expression( "vehicle MATCH %0", parameters);
                             		
                             		query_parameters.set(0,new String("'" + pos.vehicle + "'")); // create a new query condition that only subscribes to the bus we just got on.
                                     
@@ -197,6 +208,7 @@ public class Passenger extends Thread {
                                     }
                                     
                                     waitset.attach_condition(Pquery_condition); //re-attach the new condition with our new query expression!
+                                    break; // we don't care about other messages published now, since we can only get on one bus at a time. So exit the loop.
                             	}
                             	else if (pos.stopNumber == end) // this is the stop we get off at.
                             	{
@@ -206,7 +218,7 @@ public class Passenger extends Thread {
                             	}
                             	else
                             	{
-                            		System.out.println("Arriving at stop #" + pos.stopNumber + " at " + timeStamper.format(new Date()) + "\tthere is " + pos.trafficConditions + " traffic. " + (end - pos.stopNumber) + " stops left");
+                            		System.out.println(pos.vehicle + " Arriving at stop #" + pos.stopNumber + " at " + timeStamper.format(new Date()) + "\tthere is " + pos.trafficConditions + " traffic. " + (end - pos.stopNumber) + " stops left");
                             	}
                             }
                         }
@@ -226,83 +238,13 @@ public class Passenger extends Thread {
                 DomainParticipantFactory.TheParticipantFactory.
                 delete_participant(participant);
             }
-            /* RTI Data Distribution Service provides the finalize_instance()
-            method for users who want to release memory used by the
-            participant factory singleton. Uncomment the following block of
-            code for clean destruction of the participant factory
-            singleton. */
-            //DomainParticipantFactory.finalize_instance();
         }
     }
 
     // -----------------------------------------------------------------------
     // Private Types
     // -----------------------------------------------------------------------
-
-    // =======================================================================
 	
-	//since this gets done multiple times, turning it into a function.
-	// Takes the information a passenger cares about, and changes the topic filter to narrow down what they see
-	private static PositionDataReader CreatePositionReader(DomainParticipant participant, Subscriber subscriber, String filter, String[] params) {
-		/* Register type before creating topic */
-		String positionTypeName = PositionTypeSupport.get_type_name();
-		PositionTypeSupport.register_type(participant, positionTypeName);
-
-		Topic positionTopic = participant.create_topic("P2464_ischultz:POS", positionTypeName, DomainParticipant.TOPIC_QOS_DEFAULT, null /* listener */, StatusKind.STATUS_MASK_NONE);
-		if (positionTopic == null) {
-			System.err.println("create_topic error\n");
-		}
-				
-		StringSeq parameters = new StringSeq(java.util.Arrays.asList(params)); // RTI wants the parameters in this format.
-		
-		ContentFilteredTopic positionTopicFiltered =  participant.create_contentfilteredtopic_with_filter(
-                "P2464_ischultz:POS", positionTopic, filter, 
-                parameters, DomainParticipant.STRINGMATCHFILTER_NAME);
-        if (positionTopicFiltered == null) {
-            System.err.println("create_contentfilteredtopic error\n");
-        }
-
-        DataReaderListener positionListener = new PositionListenerForPassenger(); //make new listeners with the specific route we are on as a passenger
-
-        PositionDataReader positionReader = (PositionDataReader) subscriber.create_datareader(positionTopicFiltered, Subscriber.DATAREADER_QOS_DEFAULT, null, StatusKind.STATUS_MASK_ALL);
-        if (positionReader == null) {
-        	System.err.println("create_datareader error\n");
-        }
-        
-        return positionReader;
-	}
-	
-	//since this gets done multiple times, turning it into a function.
-	// Takes the information a passenger cares about, and changes the topic filter to narrow down what they see
-	private static AccidentDataReader CreateAccidentReader(DomainParticipant participant, Subscriber subscriber, String filter, String[] params) {
-		/* Register type before creating topic */
-        String accidentTypeName = AccidentTypeSupport.get_type_name();
-        AccidentTypeSupport.register_type(participant, accidentTypeName);
-		
-		Topic accidentTopic = participant.create_topic("P2464_ischultz:ACC", accidentTypeName, DomainParticipant.TOPIC_QOS_DEFAULT, null /* listener */, StatusKind.STATUS_MASK_NONE);
-		if (accidentTopic == null) {
-			System.err.println("create_topic error\n");
-		}
-		
-		StringSeq parameters = new StringSeq(java.util.Arrays.asList(params));// RTI wants the parameters in this format.
-        
-        ContentFilteredTopic accidentTopicFiltered =  participant.create_contentfilteredtopic_with_filter(
-                "P2464_ischultz:ACC", accidentTopic, filter, 
-                parameters, DomainParticipant.STRINGMATCHFILTER_NAME);
-        if (accidentTopicFiltered == null) {
-            System.err.println("create_contentfilteredtopic error\n");            
-        }
-        
-        DataReaderListener accidentListener = new AccidentListenerForPassenger(); //make new listeners with the specific route we are on as a passenger
-
-        AccidentDataReader accidentReader = (AccidentDataReader) subscriber.create_datareader(accidentTopicFiltered, Subscriber.DATAREADER_QOS_DEFAULT, accidentListener, StatusKind.STATUS_MASK_ALL);
-        if (accidentReader == null) {
-        	System.err.println("create_datareader error\n");
-        }
-        
-        return accidentReader;
-	}
-
     private static class AccidentListenerForPassenger extends DataReaderAdapter {
         AccidentSeq _dataSeq = new AccidentSeq();
         SampleInfoSeq _infoSeq = new SampleInfoSeq();
@@ -324,7 +266,7 @@ public class Passenger extends Thread {
                     Accident acc = ((Accident)_dataSeq.get(i)); // make an accident object
                     
                     if (info.valid_data) {
-                        System.out.println("Accident!\t" + acc.route + "\t" + acc.vehicle + "\t\t\t\t" + acc.stopNumber + "\t\t\t\t\t\t" + acc.timestamp);
+                        System.out.println("Accident! Bus " + acc.vehicle + " on route "+ acc.route + " got in to an accident at stop number " + acc.stopNumber + "\t" + acc.timestamp);
                     }
                 }
             } catch (RETCODE_NO_DATA noData) {
@@ -335,59 +277,6 @@ public class Passenger extends Thread {
         }
     }
     
-    private static class PositionListenerForPassenger extends DataReaderAdapter {
-    	SimpleDateFormat timeStamper = new SimpleDateFormat("h:mm:ss a"); // time format object that will take number of miliseconds and turn it into a readable timestamp
-
-        PositionSeq _dataSeq = new PositionSeq();
-        SampleInfoSeq _infoSeq = new SampleInfoSeq();
-        
-        public void on_data_available(DataReader reader) {
-            PositionDataReader PositionReader = (PositionDataReader)reader;
-
-            try {
-                PositionReader.take(
-                    _dataSeq, _infoSeq,
-                    ResourceLimitsQosPolicy.LENGTH_UNLIMITED,
-                    SampleStateKind.ANY_SAMPLE_STATE,
-                    ViewStateKind.ANY_VIEW_STATE,
-                    InstanceStateKind.ANY_INSTANCE_STATE);
-
-                for(int i = 0; i < _dataSeq.size(); ++i) {
-                    SampleInfo info = (SampleInfo)_infoSeq.get(i);
-                    Position pos = (Position)_dataSeq.get(i);
-
-                    if (info.valid_data) {                    	
-                    	Subscriber subscriber = reader.get_subscriber(); // getting information from the parent of this reader so that we can change the filter after certain conditions are met.
-                		DomainParticipant participant = subscriber.get_participant();
-                		
-                    	if (pos.stopNumber == start) //This is the stop that we get on at!
-                    	{
-                    		System.out.println("Passenger getting on bus " + pos.vehicle + " at " + timeStamper.format(new Date()) + "\tthere is " + pos.trafficConditions + " traffic. " + (pos.stopNumber - end) + " stops left");
-                    		String[] filter = {pos.vehicle}; //build the filter
-                    		subscriber.delete_contained_entities(); //deletes all the datareaders
-                			// Re-create the readers with the new filter
-                			CreatePositionReader(participant, subscriber, "vehicle MATCH %0", filter);
-                			CreateAccidentReader(participant, subscriber, "vehicle MATCH %0", filter);
-                    		
-                    	}
-                    	else if (pos.stopNumber == end) // this is the stop we get off at.
-                    	{
-                    		System.out.println("Arriving at destination by " + pos.vehicle + " at " + timeStamper.format(new Date()));
-                    		subscriber.delete_contained_entities(); //deletes all the datareaders
-                    		// Don't need to make new ones since we are now off the bus!
-                    	}
-                    	else
-                    	{
-                    		System.out.println("Arriving at stop #" + pos.stopNumber + " at " + timeStamper.format(new Date()) + "\tthere is " + pos.trafficConditions + " traffic. " + (pos.stopNumber - end) + " stops left");
-                    	}
-                    }
-                }
-            } catch (RETCODE_NO_DATA noData) {
-                // No data to process
-            } finally {
-                PositionReader.return_loan(_dataSeq, _infoSeq);
-            }
-        }
-    }
+ 
 }
 
