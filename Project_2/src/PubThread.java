@@ -26,6 +26,11 @@ public class PubThread extends Thread {
 		public PubThread(RouteInfo info) {
 			routeInfo = info;
 		}
+		
+		public double TimeBetweenStops()
+		{
+			return routeInfo.TimeBetweenStops();
+		}
 
 		//function that a thread uses to execute. From this point on the class runs as a thread
 		// Is called through PubThread.start()

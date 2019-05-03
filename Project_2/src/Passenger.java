@@ -120,15 +120,106 @@ public class Passenger extends Thread {
 			// Use a function that I defined to create the readers.
 			positionReader = CreatePositionReader(participant, subscriber, "route MATCH %0", list);
 			accidentReader = CreateAccidentReader(participant, subscriber, "route MATCH %0", list);
+			
+			/* Create query condition */
+            StringSeq query_parameters = new StringSeq(1);
+            query_parameters.add(route);
+            String query_expression = new String("vehicle MATCH %0"); 
+            
+            QueryCondition Pquery_condition = positionReader.create_querycondition(
+                    SampleStateKind.NOT_READ_SAMPLE_STATE,
+                    ViewStateKind.ANY_VIEW_STATE,
+                    InstanceStateKind.ANY_INSTANCE_STATE,
+                    query_expression,
+                    query_parameters);
+            if (Pquery_condition == null) {
+                System.err.println("create_querycondition error\n");
+                return;
+            }
+            
+            QueryCondition Aquery_condition = accidentReader.create_querycondition(
+                    SampleStateKind.NOT_READ_SAMPLE_STATE,
+                    ViewStateKind.ANY_VIEW_STATE,
+                    InstanceStateKind.ANY_INSTANCE_STATE,
+                    query_expression,
+                    query_parameters);
+            if (Aquery_condition == null) {
+                System.err.println("create_querycondition error\n");
+                return;
+            }
+
+            WaitSet waitset = new WaitSet();
+            
+            /* Attach Query Conditions */
+            waitset.attach_condition(Aquery_condition);
+            waitset.attach_condition(Pquery_condition);
+            
+            /* wait_timeaut is 1.5 secs */
+            final Duration_t wait_timeout = new Duration_t(1,500000000);
 
             // --- Wait for data --- //
+         
 
             while (true) {
+            	ConditionSeq active_conditions_seq = new ConditionSeq();
+            	
+            	try {
+                    waitset.wait(active_conditions_seq, wait_timeout);
+                } catch (RETCODE_TIMEOUT to) {
+                    //System.out.println(
+                     //       "Wait timed out!! No conditions were triggered.");
+                    continue;
+                } 
+            	
+            	SimpleDateFormat timeStamper = new SimpleDateFormat("h:mm:ss a"); // time format object that will take number of miliseconds and turn it into a readable timestamp
+
+                PositionSeq _dataSeq = new PositionSeq();
+                SampleInfoSeq _infoSeq = new SampleInfoSeq();
+            	
                 try {
                     Thread.sleep(1000);  // in millisec
                 } catch (InterruptedException ix) {
                     System.err.println("INTERRUPTED");
                     break;
+                }
+                
+                boolean follow = true;
+                while (follow) {
+                	try {
+                		positionReader.take(
+                            _dataSeq, _infoSeq,
+                            ResourceLimitsQosPolicy.LENGTH_UNLIMITED,
+                            SampleStateKind.ANY_SAMPLE_STATE,
+                            ViewStateKind.ANY_VIEW_STATE,
+                            InstanceStateKind.ANY_INSTANCE_STATE);
+
+                        for(int i = 0; i < _dataSeq.size(); ++i) {
+                            SampleInfo info = (SampleInfo)_infoSeq.get(i);
+                            Position pos = (Position)_dataSeq.get(i);
+
+                            if (info.valid_data) {                    	                        	
+                            	if (pos.stopNumber == start) //This is the stop that we get on at!
+                            	{
+                            		System.out.println("Passenger getting on bus " + pos.vehicle + " at " + timeStamper.format(new Date()) + "\tthere is " + pos.trafficConditions + " traffic. " + (pos.stopNumber - end) + " stops left");
+                            		
+                            	}
+                            	else if (pos.stopNumber == end) // this is the stop we get off at.
+                            	{
+                            		System.out.println("Arriving at destination by " + pos.vehicle + " at " + timeStamper.format(new Date()));
+                            		subscriber.delete_contained_entities(); //deletes all the datareaders
+                            		// Don't need to make new ones since we are now off the bus!
+                            	}
+                            	else
+                            	{
+                            		System.out.println("Arriving at stop #" + pos.stopNumber + " at " + timeStamper.format(new Date()) + "\tthere is " + pos.trafficConditions + " traffic. " + (pos.stopNumber - end) + " stops left");
+                            	}
+                            }
+                        }
+                    } catch (RETCODE_NO_DATA noData) {
+                        // No data to process
+                    } finally {
+                        positionReader.return_loan(_dataSeq, _infoSeq);
+                    }
                 }
             }
         } finally {
