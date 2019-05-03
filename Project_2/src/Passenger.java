@@ -182,14 +182,28 @@ public class Passenger extends Thread {
                             SampleInfo info = (SampleInfo)P_infoSeq.get(i);
                             Position pos = (Position)P_dataSeq.get(i); // create a position object from the information that was published
                             
-                            //System.out.println("current recieved data position" + i);
+                          //calculate the number of stops left to show on screen
+                            int currStopDelta;
+                    		int stopsLeft;
 
                             if (info.valid_data) {                    	                        	
                             	if (pos.stopNumber == start) //This is the stop that we get on at!
                             	{
                             		onBus = true; // get on the bus!
                             		
-                            		System.out.println("Passenger getting on bus " + pos.vehicle + " at " + timeStamper.format(new Date()) + "\tthere is " + pos.trafficConditions + " traffic. " + (end - pos.stopNumber) + " stops left");
+                            		//show stopsleft until we get on the bus
+                                    if (onBus)
+                                    	currStopDelta = end - pos.stopNumber;
+                                    else
+                                    	currStopDelta = start - pos.stopNumber;
+                                    
+                                    //wrap negatives if needed.
+                            		if (currStopDelta < 0)
+                            			stopsLeft = currStopDelta + pos.numStops;
+                            		else
+                            			stopsLeft = currStopDelta;
+                            		
+                            		System.out.println("Passenger getting on bus " + pos.vehicle + " at " + timeStamper.format(new Date()) + "\tthere is " + pos.trafficConditions + " traffic. " + stopsLeft + " stops left");
 
                             		waitset.detach_condition(Pquery_condition); //remove the original query condition
                             		
@@ -224,7 +238,20 @@ public class Passenger extends Thread {
                             	}
                             	else
                             	{
-                            		System.out.println(pos.vehicle + " Arriving at stop #" + pos.stopNumber + " at " + timeStamper.format(new Date()) + "\tthere is " + pos.trafficConditions + " traffic. " + (end - pos.stopNumber) + " stops left");
+                            		
+                            		//show stopsleft until we get on the bus
+                                    if (onBus)
+                                    	currStopDelta = end - pos.stopNumber;
+                                    else
+                                    	currStopDelta = start - pos.stopNumber;
+                                    
+                                    //wrap negatives if needed.
+                            		if (currStopDelta < 0)
+                            			stopsLeft = currStopDelta + pos.numStops;
+                            		else
+                            			stopsLeft = currStopDelta;
+                            		
+                            		System.out.println(pos.vehicle + " Arriving at stop #" + pos.stopNumber + " at " + timeStamper.format(new Date()) + "\tthere is " + pos.trafficConditions + " traffic. " + stopsLeft + " stops left");
                             	}
                             }
                         }
