@@ -171,16 +171,17 @@ public class PubThread extends Thread {
 					}
 
 					/* Write data */
-					positionWriter.write(positionInstance, instance_handle);
-					System.out.println(routeInfo.BusName() + " published a position message at stop #" + stop + " on route " + routeInfo.Name() + " at " + timeString);
 					
-					// only publish an accident if there actual was one
+					// only publish an accident if there actual was one. We should publish accidents first, since subscribers may only want to check based on position publishing
 					if (isAccident)
 					{
 						accidentWriter.write(accidentInstance, instance_handle);
 						System.out.println(routeInfo.BusName() + " published an accident message at stop #" + stop + " on route " + routeInfo.Name() + " at " + timeString);
 						isAccident = false; // Reset the accident flag
 					}	
+					
+					positionWriter.write(positionInstance, instance_handle);
+					System.out.println(routeInfo.BusName() + " published a position message at stop #" + stop + " on route " + routeInfo.Name() + " at " + timeString);
 				}
 				}
 
