@@ -20,10 +20,10 @@ import java.util.Random;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class PubThread extends Thread {
+public class SubThread extends Thread {
 		RouteInfo routeInfo;
 
-		public PubThread(RouteInfo info) {
+		public SubThread(RouteInfo info) {
 			routeInfo = info;
 		}
 
@@ -113,8 +113,6 @@ public class PubThread extends Thread {
 				SimpleDateFormat timeStamper = new SimpleDateFormat("h:mm:ss a"); // time format object that will take number of miliseconds and turn it into a readable timestamp
 				boolean isAccident = false;
 
-				for (int round = 0; round < routeInfo.Runs(); ++round)
-				{
 				for (int stop = 1; stop < routeInfo.Stops() + 1; ++stop) {
 					actualWaitTime = betweenStops; //reset the wait time
 					String timeString = timeStamper.format(new Date()); //makes a timestamp for the current time
@@ -176,7 +174,6 @@ public class PubThread extends Thread {
 						System.out.println(routeInfo.BusName() + " published an accident message at stop #" + stop + " on route " + routeInfo.Name() + " at " + timeString);
 						isAccident = false; // Reset the accident flag
 					}	
-				}
 				}
 
 				// writer.unregister_instance(instance, instance_handle);

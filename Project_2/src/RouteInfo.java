@@ -6,7 +6,7 @@ public class RouteInfo {
 	private int numVehicles;
 	private int numRuns;
 	private int numStops;
-	private int timeBetweenStops;
+	private double timeBetweenStops;
 	private String routeName;
 	private String busName;
 
@@ -31,7 +31,7 @@ public class RouteInfo {
 		return numStops;
 	}
 
-	public int TimeBetweenStops() {
+	public double TimeBetweenStops() {
 		return timeBetweenStops;
 	}
 
@@ -47,7 +47,7 @@ public class RouteInfo {
 	{
 		System.out.println("numVehicles: " + Integer.toString(numVehicles) + "\n" + "numRuns: "
 				+ Integer.toString(numRuns) + "\n" + "numStops: " + Integer.toString(numStops) + "\n"
-				+ "timeBetweenStops: " + Integer.toString(timeBetweenStops) + "\n" + "routeName: " + routeName
+				+ "timeBetweenStops: " + Double.toString(timeBetweenStops) + "\n" + "routeName: " + routeName
 				+ "\nbusName: " + busName);
 	}
 }

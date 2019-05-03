@@ -26,6 +26,8 @@ public class PubLauncher {
 			int numRoutes;
 			int numVehicles;
 			int numRuns;
+			int numThreads;
+			int curThread = 0;
 			PubThread[] pubThreads;
 			
 			// Variables parsed from each route that is used to launch individual threads
@@ -40,30 +42,38 @@ public class PubLauncher {
 			numRoutes = Integer.parseInt(prop.getProperty("numRoutes", "0")); // stores the number of routes as an integer, default 0
 			numVehicles = Integer.parseInt(prop.getProperty("numVehicles", "0")); // stores the number of vehicles as an integer, default 0
 			numRuns = Integer.parseInt(prop.getProperty("numRuns", "0")); // stores the number of runs as an integer, default 0
-			pubThreads = new PubThread[numRoutes * numVehicles]; // make an array of enough threads.
+			numThreads = numRoutes * numVehicles;
+			pubThreads = new PubThread[numThreads]; // make an array of enough threads.
 			
 
 			//Parse out the data for all the routes and then start a thread for that route
 			for (int route = 0; route < numRoutes; route++)
 			{
 				currRoutePrefix = "route" + Integer.toString(route + 1); //set the name of the current route to access in the properties file
-				System.out.println(currRoutePrefix);
+				//System.out.println(currRoutePrefix);
 						
 				numStops = Integer.parseInt(prop.getProperty(currRoutePrefix + "numStops", "0"));
 				timeBetweenStops = Integer.parseInt(prop.getProperty(currRoutePrefix + "TimeBetweenStops", "0"));
 				routeName = prop.getProperty(currRoutePrefix);
 				
-				for (int nameNum = 0; nameNum < numVehicles; nameNum++)
+				for (int nameNum = 1; nameNum < numVehicles + 1; nameNum++)
 				{
-					busName = prop.getProperty(currRoutePrefix + "Vehicle" + Integer.toString(nameNum + 1)); //add 1 since we start at 0
+					busName = prop.getProperty(currRoutePrefix + "Vehicle" + Integer.toString(nameNum)); //add 1 since we start at 0
 					info = new RouteInfo(numVehicles, numRuns, numStops, timeBetweenStops, routeName, busName); // put all our data into a routeinfo object
-					info.Print();
-					pubThreads[route] = new PubThread(info); //create a thread for it, but don't start it yet
+					//info.Print();
+					pubThreads[curThread] = new PubThread(info); //create a thread for it, but don't start it yet
+					curThread++;
 				}
+				//System.out.println(route);
 			}
 			
-			for (PubThread t : pubThreads)
-				t.start();
+			
+			
+			for (int i = 0; i < numThreads; i++)
+			{
+				System.out.println(i);
+				pubThreads[i].start();
+			}
 			
 			//Don't really need to wait on join since starting threads is the last thing this class does.
 			
