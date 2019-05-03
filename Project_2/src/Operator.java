@@ -98,6 +98,7 @@ public class Operator extends Thread {
             System.out.println("MessageType\tRoute\t\tVehicle\t\tTraffic\t\tStop#\t#Stops\tTimeBetweenStops\tFill%\tTimestamp");
 
             while (true) { //run forever, but sleep every second so CPU time doesnt get wasted.
+                //When the thread wakes up, the listeners defined above will print any information that was published while sleeping.
                 try {
                     Thread.sleep(1000); // in millisec
                 } catch (InterruptedException ix) {
@@ -106,7 +107,6 @@ public class Operator extends Thread {
                 }
             }
         } finally {
-
             // --- Shutdown --- //
             if (participant != null) {
                 participant.delete_contained_entities();
@@ -117,23 +117,25 @@ public class Operator extends Thread {
     }
 
     // -----------------------------------------------------------------------
-    // Private Types
+    // Listeners
     // -----------------------------------------------------------------------
 
-    // =======================================================================
-
+    /**
+     * Accident listener listens for accidents and when recieved, prints information about it to the screen for the operator to see
+     */
     private static class AccidentListener extends DataReaderAdapter {
 
         AccidentSeq _dataSeq = new AccidentSeq();
         SampleInfoSeq _infoSeq = new SampleInfoSeq();
 
         public void on_data_available(DataReader reader) {
-            AccidentDataReader AccidentReader = (AccidentDataReader) reader;
+            AccidentDataReader AccidentReader = (AccidentDataReader) reader; //cast the reader as an accident reader so we can access fields specific to an accident class
 
             try {
+                //Get the new information from the DDS
                 AccidentReader.take(_dataSeq, _infoSeq, ResourceLimitsQosPolicy.LENGTH_UNLIMITED, SampleStateKind.ANY_SAMPLE_STATE, ViewStateKind.ANY_VIEW_STATE, InstanceStateKind.ANY_INSTANCE_STATE);
 
-                for (int i = 0; i < _dataSeq.size(); ++i) {
+                for (int i = 0; i < _dataSeq.size(); ++i) { //for the number of messeges we missed while sleeping, print them each. This will be outputted in the same terminal window as OperatorLauncher
                     SampleInfo info = (SampleInfo) _infoSeq.get(i);
                     Accident acc = ((Accident) _dataSeq.get(i)); // make an accident object that we can get information from
 
@@ -149,22 +151,26 @@ public class Operator extends Thread {
         }
     }
 
+    /***
+     * Listens for position updates and displays them on a grid on the screen.
+     */
     private static class PositionListener extends DataReaderAdapter {
 
         PositionSeq _dataSeq = new PositionSeq();
         SampleInfoSeq _infoSeq = new SampleInfoSeq();
 
         public void on_data_available(DataReader reader) {
-            PositionDataReader PositionReader = (PositionDataReader) reader;
+            PositionDataReader PositionReader = (PositionDataReader) reader; //cast the reader as a position reader so we can access fields specific to an position class
 
             try {
+                //Get the new information from the DDS
                 PositionReader.take(_dataSeq, _infoSeq, ResourceLimitsQosPolicy.LENGTH_UNLIMITED, SampleStateKind.ANY_SAMPLE_STATE, ViewStateKind.ANY_VIEW_STATE, InstanceStateKind.ANY_INSTANCE_STATE);
 
-                for (int i = 0; i < _dataSeq.size(); ++i) {
+                for (int i = 0; i < _dataSeq.size(); ++i) { //for the number of messeges we missed while sleeping, print them each. This will be outputted in the same terminal window as OperatorLauncher
                     SampleInfo info = (SampleInfo) _infoSeq.get(i);
-                    Position pos = (Position) _dataSeq.get(i);
+                    Position pos = (Position) _dataSeq.get(i);  // make a position object that we can get information from
 
-                    if (info.valid_data) {
+                    if (info.valid_data) { // if the data is valid, output a line to the screen that follows the same forma
                         System.out.println("Position\t" + pos.route + "\t" + pos.vehicle + "\t\t" + pos.trafficConditions + "\t\t" + pos.stopNumber + "\t" + pos.numStops + "\t" + pos.timeBetweenStops + "\t\t\t" + pos.fillInRatio + "\t" + pos.timestamp);
                     }
                 }
