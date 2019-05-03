@@ -21,10 +21,13 @@ public class SubLauncher {
 			int curThread = 0;
 			SubThread[] subThreads;
 				
-			Operator operator = new Operator();
-			operator.start();
+			//Operator operator = new Operator();
+			//operator.start();
+			
+			Passenger passenger = new Passenger("Express1", 2, 4);
+			passenger.start();
 			
 			//Don't really need to wait on join since starting threads is the last thing this class does.
-			
+
 	}		
 }
