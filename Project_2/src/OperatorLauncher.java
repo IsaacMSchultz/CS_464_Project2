@@ -15,7 +15,7 @@ import com.rti.dds.topic.Topic;
 
 public class OperatorLauncher {
 	public static void main(String[] args) {
-			Operator operator = new Operator();
+			Operator operator = new Operator(); //just makes a new operator and starts it since I didnt add cli arguments to operator class.
 			operator.start();
 	}
 }

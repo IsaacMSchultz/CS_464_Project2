@@ -24,7 +24,6 @@ public class Operator extends Thread {
     //function that a thread uses to execute. From this point on the class runs as a thread
     // Is called through PubThread.start()
     public void run() {
-
         DomainParticipant participant = null;
         Subscriber subscriber = null;
         Topic positionTopic = null;
@@ -35,9 +34,7 @@ public class Operator extends Thread {
         PositionDataReader positionReader = null;
 
         try {
-
             // --- Create participant --- //
-
             participant = DomainParticipantFactory.TheParticipantFactory.create_participant(0, DomainParticipantFactory.PARTICIPANT_QOS_DEFAULT, null /* listener */, StatusKind.STATUS_MASK_NONE);
             if (participant == null) {
                 System.err.println("create_participant error\n");
@@ -45,7 +42,6 @@ public class Operator extends Thread {
             }
 
             // --- Create subscriber --- //
-
             subscriber = participant.create_subscriber(DomainParticipant.SUBSCRIBER_QOS_DEFAULT, null /* listener */, StatusKind.STATUS_MASK_NONE);
             if (subscriber == null) {
                 System.err.println("create_subscriber error\n");
@@ -53,7 +49,6 @@ public class Operator extends Thread {
             }
 
             // --- Create topic --- //
-
             /* Register type before creating topic */
             String positionTypeName = PositionTypeSupport.get_type_name();
             PositionTypeSupport.register_type(participant, positionTypeName);
@@ -168,7 +163,7 @@ public class Operator extends Thread {
 
                 for (int i = 0; i < _dataSeq.size(); ++i) { //for the number of messeges we missed while sleeping, print them each. This will be outputted in the same terminal window as OperatorLauncher
                     SampleInfo info = (SampleInfo) _infoSeq.get(i);
-                    Position pos = (Position) _dataSeq.get(i);  // make a position object that we can get information from
+                    Position pos = (Position) _dataSeq.get(i); // make a position object that we can get information from
 
                     if (info.valid_data) { // if the data is valid, output a line to the screen that follows the same forma
                         System.out.println("Position\t" + pos.route + "\t" + pos.vehicle + "\t\t" + pos.trafficConditions + "\t\t" + pos.stopNumber + "\t" + pos.numStops + "\t" + pos.timeBetweenStops + "\t\t\t" + pos.fillInRatio + "\t" + pos.timestamp);
