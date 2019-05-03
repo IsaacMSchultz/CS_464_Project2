@@ -145,7 +145,10 @@ public class Passenger extends Thread {
             /* wait_timeaut is 1.5 secs */
             final Duration_t wait_timeout = new Duration_t(1,500000000);
             boolean atDestination = false; // variable to store whether the passenger has arrived at their destination yet
+            boolean onBus = false; //variable to check in if statements if the passenger is on the bus, so we dont get off the bus before we were ever on it
             SimpleDateFormat timeStamper = new SimpleDateFormat("h:mm:ss a"); // time format object that will take number of miliseconds and turn it into a readable timestamp
+            
+            System.out.println("Waiting for bus at stop# " + start);// log where the passenger is waiting
             
             // --- Wait for data --- //
             while (!atDestination) { //loop until the passenger arrives at their destination
@@ -184,6 +187,8 @@ public class Passenger extends Thread {
                             if (info.valid_data) {                    	                        	
                             	if (pos.stopNumber == start) //This is the stop that we get on at!
                             	{
+                            		onBus = true; // get on the bus!
+                            		
                             		System.out.println("Passenger getting on bus " + pos.vehicle + " at " + timeStamper.format(new Date()) + "\tthere is " + pos.trafficConditions + " traffic. " + (end - pos.stopNumber) + " stops left");
 
                             		waitset.detach_condition(Pquery_condition); //remove the original query condition
@@ -208,9 +213,10 @@ public class Passenger extends Thread {
                                     }
                                     
                                     waitset.attach_condition(Pquery_condition); //re-attach the new condition with our new query expression!
+                                    
                                     break; // we don't care about other messages published now, since we can only get on one bus at a time. So exit the loop.
                             	}
-                            	else if (pos.stopNumber == end) // this is the stop we get off at.
+                            	else if (pos.stopNumber == end && onBus) // this is the stop we get off at and we are on the bus
                             	{
                             		System.out.println("Arriving at destination by " + pos.vehicle + " at " + timeStamper.format(new Date()));
                             		// Don't need to make new ones since we are now off the bus!

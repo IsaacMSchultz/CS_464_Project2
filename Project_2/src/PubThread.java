@@ -126,7 +126,7 @@ public class PubThread extends Thread {
 					positionInstance.trafficConditions = "Normal"; //reset traffic conditions.
 					
 					// roll the dice on an accident as we begin to leave the bus stop. 1 has a 1 in 10 (10%) chance of being the output!
-					if (rand.nextInt(2) == 1) //increased the probability of an accident to demo it for the passengers
+					if (rand.nextInt(10) == 1) //increased the probability of an accident to demo it for the passengers
 					{
 						accidentInstance.stopNumber = stop;
 						accidentInstance.timestamp = timeString;
@@ -159,7 +159,7 @@ public class PubThread extends Thread {
 					
 					positionInstance.stopNumber = stop;
 					positionInstance.timestamp = timeString;
-					positionInstance.timeBetweenStops = (double) (actualWaitTime / 1000);
+					positionInstance.timeBetweenStops = (double) (actualWaitTime / 1000.0);
 					positionInstance.fillInRatio = rand.nextInt(100); //random ratio of bus passengers.
 
 					// wait for the length of traffic

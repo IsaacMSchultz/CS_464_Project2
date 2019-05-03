@@ -13,12 +13,9 @@ import com.rti.dds.infrastructure.StatusKind;
 import com.rti.dds.publication.Publisher;
 import com.rti.dds.topic.Topic;
 
-public class PassengerLauncher {
+public class OperatorLauncher {
 	public static void main(String[] args) {
-			if (args.length != 3)
-				System.err.println("Invalid arguments!");
-			
-			Passenger passenger = new Passenger(args[0], Integer.parseInt(args[1]), Integer.parseInt(args[2]));
-			passenger.start();
-	}		
+			Operator operator = new Operator();
+			operator.start();
+	}
 }
