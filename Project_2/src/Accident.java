@@ -24,6 +24,12 @@ public class Accident   implements Copyable, Serializable{
     public Accident() {
 
     }
+    
+    public Accident(RouteInfo routeInfo) { //allowing Accident to take a routeInfo so that it can handle changing information!
+    	route = routeInfo.Name();
+    	vehicle = routeInfo.BusName();
+    }
+    
     public Accident (Accident other) {
 
         this();

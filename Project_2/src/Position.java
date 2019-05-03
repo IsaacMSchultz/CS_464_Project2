@@ -28,7 +28,15 @@ public class Position   implements Copyable, Serializable{
     public Position() {
 
     }
-    public Position (Position other) {
+    
+    public Position(RouteInfo routeInfo) { //allowing postion to take a routeInfo so that it can handle changing information!
+    	route = routeInfo.Name();
+    	vehicle = routeInfo.BusName();
+    	numStops = routeInfo.Stops();
+    	timeBetweenStops = routeInfo.TimeBetweenStops();    	
+    }
+    
+    public Position(Position other) {
 
         this();
         copy_from(other);

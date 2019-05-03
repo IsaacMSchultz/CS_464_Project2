@@ -1,0 +1,51 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Debug (Launch) - Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "Debug (Launch)-AccidentPublisher<Project_2>",
+            "request": "launch",
+            "mainClass": "AccidentPublisher",
+            "projectName": "Project_2"
+        },
+        {
+            "type": "java",
+            "name": "Debug (Launch)-AccidentSubscriber<Project_2>",
+            "request": "launch",
+            "mainClass": "AccidentSubscriber",
+            "projectName": "Project_2"
+        },
+        {
+            "type": "java",
+            "name": "Debug (Launch)-PositionPublisher<Project_2>",
+            "request": "launch",
+            "mainClass": "PositionPublisher",
+            "projectName": "Project_2"
+        },
+        {
+            "type": "java",
+            "name": "Debug (Launch)-PositionSubscriber<Project_2>",
+            "request": "launch",
+            "mainClass": "PositionSubscriber",
+            "projectName": "Project_2"
+        },
+        {
+            "type": "java",
+            "name": "PubLauncher",
+            "request": "launch",
+            "mainClass": "PubLauncher",
+            "projectName": "Project_2",
+            "env": "E:\\Programs\\RTI-Connext\\rti_connext_dds-5.3.1\\lib\\x64Win64VS2017",
+            "cwd": "E:\\Git\\CS_464\\Project 2\\Project_2\\src"
+        }
+    ]
+}

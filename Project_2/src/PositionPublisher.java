@@ -67,42 +67,16 @@ public class PositionPublisher {
     // Public Methods
     // -----------------------------------------------------------------------
 
-    public static void main(String[] args) {
-        // --- Get domain ID --- //
-        int domainId = 0;
-        if (args.length >= 1) {
-            domainId = Integer.valueOf(args[0]).intValue();
-        }
-
-        // -- Get max loop count; 0 means infinite loop --- //
-        int sampleCount = 0;
-        if (args.length >= 2) {
-            sampleCount = Integer.valueOf(args[1]).intValue();
-        }
-
-        /* Uncomment this to turn on additional logging
-        Logger.get_instance().set_verbosity_by_category(
-            LogCategory.NDDS_CONFIG_LOG_CATEGORY_API,
-            LogVerbosity.NDDS_CONFIG_LOG_VERBOSITY_STATUS_ALL);
-        */
-
-        // --- Run --- //
-        publisherMain(domainId, sampleCount);
+    public PositionPublisher()
+    {
+        startPublisher(0,0);
     }
 
     // -----------------------------------------------------------------------
     // Private Methods
     // -----------------------------------------------------------------------
 
-    // --- Constructors: -----------------------------------------------------
-
-    private PositionPublisher() {
-        super();
-    }
-
-    // -----------------------------------------------------------------------
-
-    private static void publisherMain(int domainId, int sampleCount) {
+    private static void startPublisher(int domainId, int sampleCount) {
 
         DomainParticipant participant = null;
         Publisher publisher = null;
