@@ -1,4 +1,5 @@
-
+//Isaac Schultz
+//Mopified to be able to take routeinfo in constructor
 
 /*
 WARNING: THIS FILE IS AUTO-GENERATED. DO NOT MODIFY.
@@ -9,7 +10,6 @@ For more information, type 'rtiddsgen -help' at a command shell
 or consult the RTI Connext manual.
 */
 
-import com.rti.dds.infrastructure.*;
 import com.rti.dds.infrastructure.Copyable;
 import java.io.Serializable;
 import com.rti.dds.cdr.CdrHelper;
@@ -29,7 +29,7 @@ public class Position   implements Copyable, Serializable{
 
     }
     
-    public Position(RouteInfo routeInfo) { //allowing postion to take a routeInfo so that it can handle changing information!
+    public Position(RouteInfo routeInfo) { //allowing position to take a routeInfo so that it can handle changing information!
     	route = routeInfo.Name();
     	vehicle = routeInfo.BusName();
     	numStops = routeInfo.Stops();

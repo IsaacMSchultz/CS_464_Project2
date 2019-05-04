@@ -1,15 +1,6 @@
 // Isaac Schultz
 // Copy/paste of publisher example but with tweaks for project 2
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Arrays;
-
-import com.rti.dds.domain.*;
-import com.rti.dds.infrastructure.*;
-import com.rti.dds.publication.*;
-import com.rti.dds.topic.*;
-import com.rti.ndds.config.*;
 import com.rti.dds.domain.DomainParticipant;
 import com.rti.dds.domain.DomainParticipantFactory;
 import com.rti.dds.infrastructure.InstanceHandle_t;

@@ -3,17 +3,13 @@
 // Passenger.java
 // This class creates a thread for a passenger, which listens to all publications for a certain route. And then only one bus once they get on it. And then unsubscribes once they get off.
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
 
 import com.rti.dds.domain.*;
 import com.rti.dds.infrastructure.*;
 import com.rti.dds.subscription.*;
 import com.rti.dds.topic.*;
-import com.rti.ndds.config.*;
 
 // ===========================================================================
 
@@ -23,9 +19,9 @@ public class Passenger extends Thread {
     static int end; //stop they get off at
 
     public Passenger(String route, int start, int end) {
-        this.route = route;
-        this.start = start;
-        this.end = end;
+        Passenger.route = route;
+        Passenger.start = start;
+        Passenger.end = end;
     }
 
     //function that a thread uses to execute. From this point on the class runs as a thread

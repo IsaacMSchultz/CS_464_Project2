@@ -3,15 +3,11 @@
 // Operator subscriber file recieves information from both accident and from position.
 // Writes them to the screen in a grid like way to easily see the status of all the busses in the fleet.
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Arrays;
 
 import com.rti.dds.domain.*;
 import com.rti.dds.infrastructure.*;
 import com.rti.dds.subscription.*;
 import com.rti.dds.topic.*;
-import com.rti.ndds.config.*;
 
 // ===========================================================================
 
