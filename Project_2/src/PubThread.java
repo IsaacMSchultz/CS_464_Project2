@@ -115,7 +115,6 @@ public class PubThread extends Thread {
 			 * multiple times, initialize the key here and register the keyed instance prior
 			 * to writing
 			 */
-			// instance_handle = writer.register_instance(instance);
 
 			final long tenSeconds = 10000;
 			long betweenStops = (long) (routeInfo.TimeBetweenStops() * 1000); // time between stops in ms
@@ -125,19 +124,20 @@ public class PubThread extends Thread {
 																				// into a readable timestamp
 			boolean isAccident = false;
 
-			for (int round = 0; round < routeInfo.Runs(); ++round) {
+			for (int round = 0; round < routeInfo.Runs(); ++round) { //only loop through the number of runs specified!
 				for (int stop = 1; stop < routeInfo.Stops() + 1; ++stop) {
 					actualWaitTime = betweenStops; // reset the wait time
 					positionInstance.trafficConditions = "Normal"; // reset traffic conditions.
 
 					// roll the dice on an accident as we begin to leave the bus stop. 0 has a 1 in
 					// 10 (10%) chance of being the output if the range input is 10!
-					if (rand.nextInt(routeInfo.AccidentProbability()) == 0) // increased the probability of an accident
-																			// to demo it for the passengers
+					if (rand.nextInt(routeInfo.AccidentProbability()) == 0) // uses the probability parsed from the .properties file
 					{
 						accidentInstance.stopNumber = stop;
-						accidentInstance.timestamp = timeStamper.format(new Date()); // makes a timestamp for the
-																						// current time;
+						accidentInstance.timestamp = timeStamper.format(new Date()); // makes a timestamp for the current time;
+																					 // This will be different than the position timestamp,
+																					 // But it makes sense because the accident happened BEFORE
+																					 // The bus arrived at the stop.
 
 						// wait fixed length of 10 seconds for accident.
 						try {
@@ -147,7 +147,7 @@ public class PubThread extends Thread {
 							break;
 						}
 
-						isAccident = true; // set that there was an accident
+						isAccident = true; // set that there was an accident so it can be published when the bus arrives.
 					}
 
 					// Roll the dice for the traffic conditions!
@@ -163,10 +163,10 @@ public class PubThread extends Thread {
 					}
 					// if it isnt one of those conditions then its just normal time between stops
 
+					//set the new position data that we want to publish
 					positionInstance.stopNumber = stop;
-					positionInstance.timestamp = timeStamper.format(new Date()); // makes a timestamp for the current
-																					// time;
-					positionInstance.timeBetweenStops = (double) (actualWaitTime / 1000.0);
+					positionInstance.timestamp = timeStamper.format(new Date()); // makes a timestamp for the current time;
+					positionInstance.timeBetweenStops = (double) (actualWaitTime / 1000.0); // show the actual wait time instead of the standard one
 					positionInstance.fillInRatio = rand.nextInt(100); // random ratio of bus passengers.
 
 					// wait for the length of traffic
@@ -176,8 +176,6 @@ public class PubThread extends Thread {
 						System.err.println("INTERRUPTED");
 						break;
 					}
-
-					/* Write data */
 
 					// only publish an accident if there actual was one. We should publish accidents
 					// first, since subscribers may only want to check based on position publishing
@@ -191,9 +189,6 @@ public class PubThread extends Thread {
 					System.out.println(routeInfo.BusName() + " published a position message at stop #" + stop + " on route " + routeInfo.Name() + " at " + positionInstance.timestamp);
 				}
 			}
-
-			// writer.unregister_instance(instance, instance_handle);
-
 		} finally {
 			// --- Shutdown --- //
 			if (participant != null) {
